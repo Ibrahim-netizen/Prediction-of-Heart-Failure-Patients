@@ -1,0 +1,256 @@
+setwd('C:/Users/giwai/Downloads')
+data<-read.csv('heart_failure_clinical_records_dataset.csv')
+View(data)
+#There are no missing data
+sum(is.na(data))
+summary(data)
+str(data)
+
+## Data Statistics
+
+#IQR=Q3-Q1
+#upper whisker=Q3+1.5*IQR
+#lower=Q1-1.5*IQR
+summary(data)
+
+library(dplyr)
+count(data, sex)
+
+#Visualisation of continuous variables
+pairs(~age+ creatinine_phosphokinase + ejection_fraction + platelets + serum_creatinine + serum_sodium + time, data=data, main='continuous scatter matrix', fill = 'Navy Blue')
+
+library(ggplot2)
+ggplot(data, aes(x=diabetes)) + geom_histogram() + scale_fill_continuous(type='viridis') + theme_bw() + ggtitle('Histogram on Diabetes')
+
+ggplot(data, aes(x=serum_creatinine)) + geom_histogram(color = "lightblue", fill = "Magenta", xlab='serum_creatinine', ylab = 'Frequency') + ggtitle("Frequency of serum_creatinine")
+
+hist(data$platelets, col= 'green', main = 'Histogram of platelets', xlab='Blood Platelets', ylab = 'Frequency')
+
+hist(data$time, col= 'orange', main = 'Histogram of platelets', xlab='Blood Platelets', ylab = 'Frequency')
+
+plot(density(data$serum_sodium), col= 'darkgoldenrod1', main = 'Histogram of serum_sodium', kernel= '')
+
+plot(density(data$ejection_fraction), col= 'darkgoldenrod1', main = 'Histogram of ejection_fraction')
+
+hist(data$ejection_fraction, col= 'orange', fill= data$age, main = 'Histogram of platelets', xlab='Blood Platelets', ylab = 'Frequency')
+
+plot(jitter(data$platelets), jitter(data$time))
+
+library(scatterplot3d)
+scatterplot3d(data$platelets, data$creatinine_phosphokinase, data$serum_creatinine)
+table(data$ejection_fraction)
+
+library(lessR)
+#Violin plot
+plot(creatinine_phosphokinase, data= data)
+Plot(time, data = data, by1 = sex)
+
+#put anaemia, diabetes, sex, high_blood_pressure and smoking in piechart, barchart, lollipop plot as well as  ejection_fraction are categorical variables
+xtabs(~sex + diabetes + high_blood_pressure + smoking+ anaemia + DEATH_EVENT, data = data)
+
+counts<- table(data$sex, data$smoking)
+barplot(counts, legend=rownames(counts), beside=TRUE, col= 'lightblue', xlab = 'sex', ylab = 'smoking', main = 'Smoking Vs Sex')
+
+ggplot(data, aes(fill='Sky Blue', x=high_blood_pressure)) + geom_bar(position="stack", stat="count") + ggtitle("Freq of high_blood_pressure") + xlab("high_blood_pressure") + ylab("Percentage")
+
+ggplot(data, aes(x=sex, color='darkgoldenrod1')) + geom_bar(position="stack", stat="count") + ggtitle("Percentage of sex") + xlab("sex") + ylab("Percentage")
+
+#histogram of age
+ggplot(data, aes(x=age, fill='sex')) + geom_histogram(color = "grey", binwidth=4) + ggtitle("Percentage of sex") + xlab("sex") + ylab("Percentage")
+
+ggplot(data, aes(x=ejection_fraction)) + geom_histogram(color = "black", fill = "darkgoldenrod1", binwidth=5) + ggtitle("Frequency of data")
+
+ggplot(data, aes(x=creatinine_phosphokinase)) + geom_histogram(color = "black", fill = "darkgoldenrod1", binwidth=500) + ggtitle("Frequency of data")
+
+distMatrix<-as.matrix(dist(data[, 1:13]))
+heatmap(distMatrix)
+
+#Covariance and Correlation
+var(data$creatinine_phosphokinase)
+cov(data[,1:13])
+cor(data[,1:13])
+
+#To show how survival rate is related with age and sex
+ggplot(data, aes(x=sex, y=age, fill='darkgoldenrod1', binwidth=4)) + geom_boxplot()
+
+## PCA and Factor Analysis
+#Ejection fraction is the measure of how much blood the left ventricle pumps out with each contraction
+#serum creatinine is  the level of creatinine in your blood and provides an estimate of how well your kidneys filter
+#age, serum creatinine, ejection fraction, and Death event has -ve covariance
+mdata<-colMeans(data)
+
+data_old<-data
+
+cov(data$serum_creatinine, data$ejection_fraction)
+cov(data$serum_creatinine, data$high_blood_pressure)
+cov.matrix<-matrix(0, ncol=13, nrow=13)
+for (i in seq(1,13,1)){
+  for (j in seq(1,13,1)){
+    cov.matrix[i,j]=cov(data[,i], data[,j])
+  }
+}
+cov.matrix
+
+#compute eigenvectors and eigenvalues
+ev<-eigen(cov.matrix)
+val<-ev$values
+vec<-ev$vectors
+
+#we can reduce the dimensionality to three PCs
+#our new matrix will be
+w<-vec[,-13]
+w<-vec
+#now we want to project our data into the new low dimensionality space
+data_new<-matrix(0,ncol = 13,nrow=299)
+for(i in 1:299){
+  data_new[i,]<-as.numeric(data[i,])%*%w
+}
+
+#descriptive statistics
+summary(data)
+cor(data)
+
+#PCA and FA in R
+pcal<-princomp(data, scores = TRUE, cor = TRUE)
+summary(pcal)
+
+#loading of PCA
+loadings(pcal)
+#pcal$loadings
+
+#scree plot of eigenvalues
+#select the number of factors above 1 in the pcal plot
+plot(pcal)
+screeplot(pcal, type = 'line', main = 'Scree plot')
+
+#Biplot of score variable
+biplot(pcal)
+
+#scores of the components
+pcal$scores[1:13,]
+
+#Rotation
+#varimax(pcal$rotation)
+#promax(pcal$rotation)
+library(factoextra)
+data<-data_old
+pc <- prcomp(data, center = TRUE,scale. = FALSE)
+fviz_eig(pc)
+
+fviz_pca_var(pc,
+             col.var = "contrib", # Color by contributions to the PC
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE     # Avoid text overlapping
+)
+
+fviz_pca_ind(pc, title = "Principal Component Analysis Index",
+             col.ind = "cos2", # Color by the quality of representation
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE     # Avoid text overlapping
+)
+
+fviz_pca_var(pc, axes=c(2,3), title = "Principal Component Analysis variance",
+             col.var = "contrib", # Color by contributions to the PC
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE     # Avoid text overlapping
+)
+
+#factor analysis - different results from other softwares and no rotation
+fa1<-factanal(data, factor = 4)
+fa1
+
+fa2<-factanal(data, factor = 4, rotation = 'varimax')
+fa2
+
+fa3<-factanal(data, factor = 4, rotation = 'varimax', scores = 'regression')
+fa3
+
+fa4<-factanal(data, factor = 4, rotation = 'varimax', scores = 'regression')
+fa4
+
+library(FactoMineR)
+res.pca<-PCA(data, graph = TRUE)
+print(res.pca)
+
+fviz_eig(res.pca, addlabels = TRUE)
+get_pca_ind(res.pca)
+fviz_pca_ind(res.pca)
+fviz_pca_biplot(res.pca)
+
+#Total sum of eigen values amount to 13
+eig.val <- get_eigenvalue(res.pca)
+eig.val
+
+# Coordinates
+var$coord
+# Cos2: quality on the factor map
+var$cor
+# Contributions to the principal components
+
+var$cos2
+var$contrib
+
+head(var$coord, 4)
+fviz_pca_var(res.pca, col.var = "darkgoldenrod1")
+
+library(corrplot)
+corrplot(var$cos2, is.corr=FALSE)
+# Contributions of variables to PC1
+fviz_contrib(res.pca, choice = "var", axes = 1, top = 10)
+
+# Contributions of variables to PC2
+fviz_contrib(res.pca, choice = "var", axes = 2, top = 10)
+
+#combining the above PCs
+fviz_contrib(res.pca, choice = "var", axes = 1:2, top = 10)
+
+## Artificial Neural network
+#normalization
+data$age<-(data$age-min(data$age)) / (max(data$age-min(data$age)))
+data$creatinine_phosphokinase<-(data$creatinine_phosphokinase-min(data$creatinine_phosphokinase)) / (max(data$creatinine_phosphokinase-min(data$creatinine_phosphokinase)))
+data$ejection_fraction<-(data$ejection_fraction-min(data$ejection_fraction)) / (max(data$ejection_fraction-min(data$ejection_fraction)))
+data$platelets<-(data$platelets-min(data$platelets)) / (max(data$platelets-min(data$platelets)))
+data$serum_creatinine<-(data$serum_creatinine-min(data$serum_creatinine)) / (max(data$serum_creatinine-min(data$serum_creatinine)))
+data$serum_sodium<-(data$serum_sodium-min(data$serum_sodium)) / (max(data$serum_sodium-min(data$serum_sodium)))
+data$time<-(data$age-min(data$time)) / (max(data$time-min(data$time)))
+
+data$DEATH_EVENT<-as.factor(data$DEATH_EVENT)
+
+data<-data[, -c(12, 10)]
+summary(data)
+str(data)
+#split
+set.seed(50)
+idx <- sample(nrow(data), 0.7*nrow(data), replace = FALSE)
+train <- data[idx,]
+test <- data[-idx,]
+
+library(neuralnet)
+model <- neuralnet( 
+  data$DEATH_EVENT ~., 
+  data=train, hidden=c(5,3), threshold=0.01,
+  linear.output = FALSE
+)
+plot(model, rep = 'best')
+model$response
+model$result.matrix
+
+library(caret)
+pred<-predict(model,test)
+head(pred)
+
+df<-as.data.frame(cbind(pred,test$DEATH_EVENT))
+  pred.test<-rep(0,nrow(test))
+
+table(test$DEATH_EVENT)
+for(i in seq(1,nrow(test),1)){
+  if(pred[i, 2]>0.5){
+    pred.test[i]= 1
+  }
+  if(pred[i, 1]>0.5){
+    pred.test[i]= 0
+  }
+}
+
+confusionMatrix(as.factor(pred.test), test$DEATH_EVENT)
+
