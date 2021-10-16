@@ -46,7 +46,7 @@ Similar to PCA, the new variables obtained after undergoing factor analysis are 
 ## Artificial Neural Network
 A group of logistic regression analysis with inputs, hidden layers, and predicted probability with neurons each with bias and activation function constitute the concept of neural networks. A neural network is a series of algorithms that endeavors to recognize underlying relationships in a set of data through a process that mimics the way the human brain operates. Neural networks are multi-layer networks of neurons (the blue and magenta nodes in the chart below) that we use to classify things, make predictions, etc.
 
-![image](https://user-images.githubusercontent.com/76513466/137569184-928d896c-6f12-4c60-8203-63cedf831d86.png)
+![image](https://user-images.githubusercontent.com/76513466/137569367-67d6f0d2-6af6-4f2b-86fd-bf4e951c47bd.png)
 
 ### Steps and Results from Artificial Neural Network
 Neural network is built by splitting and training dataset to understand the relationship between the clinical data and the classifier prediction model.
@@ -60,7 +60,7 @@ event.
 - A confusion matrix is constructed below of a cross tabulation between the observed and predicted variable outcome. The p-value indicates a high accuracy level to accept the 
 prediction model.
 
-![image](https://user-images.githubusercontent.com/76513466/137569367-67d6f0d2-6af6-4f2b-86fd-bf4e951c47bd.png)
+![image](https://user-images.githubusercontent.com/76513466/137604788-4fd20643-769a-4094-8683-b738e08f648a.png)
 
 ## Conclusion
 Upon the successful completion of this research analysis, it can be drawn that this clinical dataset can be accurately reduced with the application of principal components methods such as Principal Components Analysis and Factor Analysis as well as Machine Learning Algorithm, neural networks. This research can be further expanded by experimenting with the parameters of the neural network to improve the prediction model accuracy.
